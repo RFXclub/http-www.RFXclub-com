@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RFX电竞 | 暗区突围专属护航下单平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        main: '#6366f1',
+                        sub: '#22d3ee',
+                        darkbg: '#0f111a',
+                        darkcard: '#181b2b',
+                        glass: 'rgba(255,255,255,0.06)'
+                    },
+                    fontFamily: {
+                        game: ['system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glassmorphism {
+                background: rgba(255,255,255,0.06);
+                backdrop-filter: blur(12px);
+                -webkit-backdrop-filter: blur(12px);
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+            .text-gradient {
+                background: linear-gradient(90deg, #6366f1, #22d3ee);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .btn-glow {
+                box-shadow: 0 0 16px rgba(99, 102, 241, 0.4);
+                transition: all 0.3s ease;
+            }
+            .btn-glow:hover {
+                box-shadow: 0 0 24px rgba(34, 211, 238, 0.6);
+                transform: translateY(-2px);
+            }
+            .carousel-item {
+                transition: transform 0.6s ease-in-out;
+            }
+            .scroll-hide::-webkit-scrollbar {
+                display: none;
+            }
+        }
+        * {
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: #0f111a;
+            background-image: radial-gradient(circle at 10% 20%, rgba(99,102,241,0.08) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(34,211,238,0.06) 0%, transparent 40%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+</head>
+<body class="text-gray-200 overflow-x-hidden">
+<!-- 页面进入强制须知弹窗 -->
+<div id="tipMask" class="fixed inset-0 bg-black/80 z-[9999] flex items-center justify-center p-4">
+    <div class="w-full max-w-md glassmorphism rounded-2xl p-8 text-center">
+        <h3 class="text-2xl font-bold text-gradient mb-4">下单须知</h3>
+        <div class="text-left space-y-3 text-gray-300 mb-6">
+            <p>1. 板板下单以后麻烦截图发给客服，方便快速安排打手</p>
+            <p>2. 填写的联系方式务必真实，方便客服第一时间联系您对接护航</p>
+            <p>3. 所有订单下单后默认状态为未完成，前台可自行修改订单完成状态</p>
+        </div>
+        <button id="tipConfirmBtn" disabled class="w-full py-3 rounded-lg bg-gray-600 cursor-not-allowed font-medium">
+            请阅读须知（剩余 <span id="countNum">5</span> 秒）
+        </button>
+    </div>
+</div>
+
+<!-- 顶部导航栏 -->
+<nav class="fixed top-0 left-0 w-full z-50 glassmorphism">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+        <a href="#home" class="text-2xl font-bold text-gradient flex items-center gap-2">
+            <i class="fa fa-crosshairs text-sub text-3xl"></i>
+            RFX电竞
+        </a>
+        <div class="hidden md:flex items-center gap-8 text-sm">
+            <a href="#home" class="hover:text-sub transition">首页</a>
+            <a href="#goods" class="hover:text-sub transition">护航套餐</a>
+            <a href="#query" class="hover:text-sub transition">我的订单</a>
+            <a href="javascript:openService()" class="hover:text-sub transition">联系客服</a>
+            <a href="javascript:openAdminPwd()" class="hover:text-sub transition">管理后台</a>
+        </div>
+        <div class="flex gap-4">
+            <button id="switchAccountBtn" onclick="switchAccount()" class="hidden px-4 py-2 rounded-lg glassmorphism text-sm">
+                <i class="fa fa-exchange mr-1"></i>切换账号
+            </button>
+        </div>
+    </div>
+</nav>
+
+<main class="pt-20">
+    <!-- 轮播区域 -->
+    <section id="home" class="max-w-7xl mx-auto px-4 py-6 overflow-hidden relative">
+        <div class="relative h-[320px] md:h-[420px] rounded-2xl overflow-hidden glassmorphism">
+            <div id="carouselWrap" class="flex h-full w-[300%] carousel-item">
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-r from-main/30 to-sub/20">
+                    <div class="text-center">
+                        <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-bold text-gradient">暗区突围性价比护航</h2>
+                        <p class="mt-3 text-gray-300">此套餐只能在周五下午6点~周天凌晨可点</p>
+                    </div>
+                </div>
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-l from-main/30 to-sub/20">
+                    <div class="text-center">
+                        <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-bold text-gradient">仅需9.9元即可下单护航</h2>
+                        <p class="mt-3 text-gray-300">两种百万护航套餐二选一</p>
+                    </div>
+                </div>
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-r from-sub/30 to-main/20">
+                    <div class="text-center">
+                        <h2 class="text-[clamp(1.8rem,4vw,3rem)] font-bold text-gradient">下单秒安排，全程在线</h2>
+                        <p class="mt-3 text-gray-300">客服全天在线，售后保障</p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full glassmorphism text-lg">
+                <i class="fa fa-chevron-left"></i>
+            </button>
+            <button onclick="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full glassmorphism text-lg">
+                <i class="fa fa-chevron-right"></i>
+            </button>
+        </div>
+    </section>
+
+    <!-- 套餐区域 -->
+    <section id="goods" class="max-w-7xl mx-auto px-4 py-12">
+        <h3 class="text-3xl font-bold text-center mb-10 text-gradient">护航套餐</h3>
+        <div class="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+            <div class="glassmorphism rounded-2xl p-8 btn-glow">
+                <h4 class="text-xl font-bold mb-4">130万单局护航</h4>
+                <p class="text-4xl font-bold text-sub mb-6">¥9.9</p>
+                <ul class="space-y-2 text-gray-300 mb-8">
+                    <li><i class="fa fa-check text-sub mr-2"></i>单局保底130w带出</li>
+                    <li><i class="fa fa-check text-sub mr-2"></i>打手护航包清图</li>
+                    <li><i class="fa fa-check text-sub mr-2"></i>炸单三把后每把加12万保底</li>
+                </ul>
+                <button onclick="buyGoods(130)" class="w-full py-3 rounded-lg bg-[#9333ea] btn-glow font-medium">立即下单</button>
+            </div>
+            <div class="glassmorphism rounded-2xl p-8 btn-glow">
+                <h4 class="text-xl font-bold mb-4">170万累计护航</h4>
+                <p class="text-4xl font-bold text-sub mb-6">¥9.9</p>
+                <ul class="space-y-2 text-gray-300 mb-8">
+                    <li><i class="fa fa-check text-sub mr-2"></i>累计保底170w物资带出</li>
+                    <li><i class="fa fa-check text-sub mr-2"></i>单局带出低于80万不计入保底</li>
+                    <li><i class="fa fa-check text-sub mr-2"></i>炸单三把后每把加12万保底</li>
+                </ul>
+                <button onclick="buyGoods(170)" class="w-full py-3 rounded-lg bg-[#9333ea] btn-glow font-medium">立即下单</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 我的订单：前台老板可自行切换完成状态 -->
+    <section id="query" class="max-w-7xl mx-auto px-4 py-12">
+        <h3 class="text-3xl font-bold text-center mb-10 text-gradient">我的全部订单</h3>
+        <div id="orderListBox" class="glassmorphism rounded-2xl p-6 min-h-[200px]">
+            <div id="emptyTip" class="text-center py-16 text-gray-400">
+                <i class="fa fa-file-text-o text-4xl mb-4"></i>
+                <p>暂无订单，请先登录下单</p>
+            </div>
+            <div id="orderList" class="grid md:grid-cols-2 gap-6 hidden"></div>
+        </div>
+    </section>
+</main>
+
+<!-- 底部版权 -->
+<footer class="py-6 text-center text-gray-400 text-sm border-t border-white/10 mt-10">
+    RFX电竞 · 暗区突围护航平台 © 2026
+</footer>
+
+<!-- 全局弹窗遮罩 -->
+<div id="mask" class="fixed inset-0 bg-black/70 z-[99] hidden flex items-center justify-center p-4 scroll-hide overflow-y-auto">
+    <!-- 管理员密码弹窗 -->
+    <div id="adminPwdModal" class="w-full max-w-sm glassmorphism rounded-2xl p-8 hidden my-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="text-xl font-bold text-gradient">管理员验证</h4>
+            <button onclick="closeAllModal()"><i class="fa fa-times text-xl"></i></button>
+        </div>
+        <div class="space-y-5">
+            <div>
+                <label class="block mb-2 text-sm">后台密码</label>
+                <input id="adminPwdInput" type="password" class="w-full bg-darkbg rounded-lg px-4 py-3 outline-none border border-white/10 focus:border-sub transition" placeholder="输入密码">
+            </div>
+            <button onclick="checkAdminPwd()" class="w-full py-3 rounded-lg bg-main btn-glow font-medium mt-4">验证进入后台</button>
+        </div>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div id="loginModal" class="w-full max-w-md glassmorphism rounded-2xl p-8 hidden my-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="text-xl font-bold text-gradient">用户登录</h4>
+            <button onclick="closeAllModal()"><i class="fa fa-times text-xl"></i></button>
+        </div>
+        <div class="space-y-5">
+            <div>
+                <label class="block mb-2 text-sm">暗区游戏昵称</label>
+                <input id="userName" type="text" class="w-full bg-darkbg rounded-lg px-4 py-3 outline-none border border-white/10 focus:border-sub transition" placeholder="填写游戏内昵称">
+            </div>
+            <div>
+                <label class="block mb-2 text-sm">联系方式（微信/QQ）</label>
+                <input id="userContact" type="text" class="w-full bg-darkbg rounded-lg px-4 py-3 outline-none border border-white/10 focus:border-sub transition" placeholder="填写真实联系方式">
+            </div>
+            <label class="flex items-center gap-2 text-sm">
+                <input id="adultCheck" type="checkbox">
+                我已年满18周岁，自愿下单
+            </label>
+            <button onclick="loginSubmit()" class="w-full py-3 rounded-lg bg-main btn-glow font-medium mt-4">确认登录</button>
+        </div>
+    </div>
+
+    <!-- 下单填写弹窗 -->
+    <div id="orderModal" class="w-full max-w-md glassmorphism rounded-2xl p-8 hidden my-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="text-xl font-bold text-gradient">确认下单信息</h4>
+            <button onclick="closeAllModal()"><i class="fa fa-times text-xl"></i></button>
+        </div>
+        <input type="hidden" id="buyType">
+        <div class="space-y-5">
+            <div>
+                <label class="block mb-2 text-sm">暗区昵称（自动填充）</label>
+                <input id="orderNick" readonly class="w-full bg-darkcard rounded-lg px-4 py-3 outline-none border border-white/10">
+            </div>
+            <div>
+                <label class="block mb-2 text-sm">联系方式（自动填充）</label>
+                <input id="orderContact" readonly class="w-full bg-darkcard rounded-lg px-4 py-3 outline-none border border-white/10">
+            </div>
+            <div>
+                <label class="block mb-2 text-sm">备注需求（选填）</label>
+                <textarea id="orderNote" rows="3" class="w-full bg-darkbg rounded-lg px-4 py-3 outline-none border border-white/10 focus:border-sub transition resize-none" placeholder="地图、上线时间等说明"></textarea>
+            </div>
+            <button onclick="submitOrder()" class="w-full py-3 rounded-lg bg-main btn-glow font-medium mt-2">提交订单前往支付</button>
+        </div>
+    </div>
+
+    <!-- 微信支付弹窗 -->
+    <div id="payModal" class="w-full max-w-sm glassmorphism rounded-2xl p-8 hidden text-center my-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="text-xl font-bold text-gradient">微信支付</h4>
+            <button onclick="closeAllModal()"><i class="fa fa-times text-xl"></i></button>
+        </div>
+        <div class="w-[200px] h-[200px] mx-auto rounded-lg bg-white flex items-center justify-center text-darkbg text-sm mb-4">
+            <img src=".//微信付款码.png" alt="微信收款码" class="w-[200px] h-auto mx-auto rounded-lg">
+        </div>
+        <p class="text-lg">应付金额：<span class="text-sub font-bold">9.9 元</span></p>
+        <p class="text-gray-400 text-sm mt-2">付款后请截图订单发给客服，方便安排打手</p>
+        <button onclick="paySuccess()" class="w-full py-3 rounded-lg bg-sub text-darkbg font-medium mt-6 btn-glow">我已完成付款</button>
+    </div>
+
+    <!-- 客服弹窗 -->
+    <div id="serviceModal" class="w-full max-w-md glassmorphism rounded-2xl p-8 hidden my-auto">
+        <div class="flex justify-between items-center mb-6">
+            <h4 class="text-xl font-bold text-gradient">联系客服</h4>
+            <button onclick="closeAllModal()"><i class="fa fa-times text-xl"></i></button>
+        </div>
+        <div class="space-y-4 text-lg">
+            <div class="glassmorphism p-4 rounded-lg flex items-center gap-4">
+                <i class="fa fa-qq text-sub text-2xl"></i>
+                <div>
+                    <p class="text-sm text-gray-400">客服QQ</p>
+                    <a href="https://wpa.qq.com/msgrd?v=3&uin=3752311274&site=qq&menu=yes" target="_blank" class="text-white hover:text-sub">3752311274（点击跳转新窗口）</a>
+                </div>
+            </div>
+            <div class="glassmorphism p-4 rounded-lg flex items-center gap-4">
+                <i class="fa fa-wechat text-sub text-2xl"></i>
+                <div>
+                    <p class="text-sm text-gray-400">客服微信</p>
+                    <p>wxid_92irnpbqs5cf22</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 后台管理弹窗 -->
+    <div id="adminModal" class="w-full max-w-5xl glassmorphism rounded-2xl p-8 hidden my-auto max-h-[90vh] overflow-y-auto scroll-hide">
+        <div class="flex justify-between items-center mb-6 sticky top-0 bg-darkbg py-2 gap-4 flex-wrap">
+            <h4 class="text-xl font-bold text-gradient">后台管理 · 全部客户订单</h4>
+            <div class="flex gap-3">
+                <button onclick="clearAllOrders()" class="py-2 px-4 rounded-lg bg-red-600 btn-glow text-sm">
+                    <i class="fa fa-trash mr-1"></i>一键清空所有订单
+                </button>
+                <button onclick="closeAllModal()" class="py-2 px-4 rounded-lg glassmorphism text-sm">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div id="adminOrderBox" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="text-gray-400 col-span-full text-center py-12">暂无下单记录</p>
+        </div>
+    </div>
+</div>
+
+<script>
+const ADMIN_PASSWORD = "rfx123456";
+let currentUser = JSON.parse(localStorage.getItem("rfxUser")) || null;
+let allOrders = JSON.parse(localStorage.getItem("rfxAllOrder")) || [];
+let carouselIndex = 0;
+
+// 初始化切换账号按钮
+function initAccountBtn() {
+    const switchBtn = document.getElementById("switchAccountBtn");
+    if (currentUser) {
+        switchBtn.classList.remove("hidden");
+    } else {
+        switchBtn.classList.add("hidden");
+    }
+}
+initAccountBtn();
+
+// 须知倒计时
+let countDown = 5;
+const countDom = document.getElementById("countNum");
+const confirmBtn = document.getElementById("tipConfirmBtn");
+const tipMask = document.getElementById("tipMask");
+const timer = setInterval(() => {
+    countDown--;
+    countDom.innerText = countDown;
+    if (countDown <= 0) {
+        clearInterval(timer);
+        confirmBtn.disabled = false;
+        confirmBtn.classList.remove("bg-gray-600", "cursor-not-allowed");
+        confirmBtn.classList.add("bg-main", "btn-glow");
+        confirmBtn.innerText = "我已阅读，进入网站";
+        confirmBtn.onclick = () => {
+            tipMask.style.display = "none";
+            openLogin();
+        };
+    }
+}, 1000);
+
+// 轮播
+function autoCarousel() {
+    carouselIndex = (carouselIndex + 1) % 3;
+    document.getElementById("carouselWrap").style.transform = `translateX(-${carouselIndex * 100 / 3}%)`;
+}
+setInterval(autoCarousel, 4000);
+
+function nextSlide() {
+    carouselIndex = (carouselIndex + 1) % 3;
+    document.getElementById("carouselWrap").style.transform = `translateX(-${carouselIndex * 100 / 3}%)`;
+}
+
+function prevSlide() {
+    carouselIndex = (carouselIndex - 1 + 3) % 3;
+    document.getElementById("carouselWrap").style.transform = `translateX(-${carouselIndex * 100 / 3}%)`;
+}
+
+// 遮罩控制
+function showMask() {
+    document.getElementById("mask").classList.remove("hidden");
+}
+
+function closeAllModal() {
+    document.getElementById("mask").classList.add("hidden");
+    document.querySelectorAll("#mask > div").forEach(el => el.classList.add("hidden"));
+}
+
+// 打开登录弹窗
+function openLogin() {
+    closeAllModal();
+    showMask();
+    document.getElementById("loginModal").classList.remove("hidden");
+}
+
+// 切换账号
+function switchAccount() {
+    localStorage.removeItem("rfxUser");
+    currentUser = null;
+    initAccountBtn();
+    renderUserOrder();
+    openLogin();
+}
+
+// 登录提交
+function loginSubmit() {
+    const name = document.getElementById("userName").value.trim();
+    const contact = document.getElementById("userContact").value.trim();
+    const adult = document.getElementById("adultCheck").checked;
+
+    if (!name) return alert("请填写暗区游戏昵称");
+    if (!contact) return alert("请填写联系方式");
+    if (!adult) return alert("必须勾选已成年");
+
+    currentUser = { name, contact };
+    localStorage.setItem("rfxUser", JSON.stringify(currentUser));
+    closeAllModal();
+    alert("登录成功，可正常下单！");
+    initAccountBtn();
+    renderUserOrder();
+}
+
+// 下单检测登录
+function buyGoods(type) {
+    if (!currentUser) {
+        alert("请先登录账号");
+        openLogin();
+        return;
+    }
+    closeAllModal();
+    showMask();
+    document.getElementById("buyType").value = type;
+    document.getElementById("orderNick").value = currentUser.name;
+    document.getElementById("orderContact").value = currentUser.contact;
+    document.getElementById("orderNote").value = "";
+    document.getElementById("orderModal").classList.remove("hidden");
+}
+
+// 提交订单
+function submitOrder() {
+    closeAllModal();
+    showMask();
+    document.getElementById("payModal").classList.remove("hidden");
+}
+
+// 支付成功生成订单
+function paySuccess() {
+    const type = document.getElementById("buyType").value;
+    const note = document.getElementById("orderNote").value.trim();
+
+    const order = {
+        id: Date.now(),
+        userName: currentUser.name,
+        userContact: currentUser.contact,
+        goods: type + "万物资护航",
+        price: "9.9",
+        note: note,
+        status: "未完成",
+        time: new Date().toLocaleString()
+    };
+
+    allOrders.push(order);
+    localStorage.setItem("rfxAllOrder", JSON.stringify(allOrders));
+    closeAllModal();
+    alert("下单成功！前往我的订单查看进度");
+    renderUserOrder();
+}
+
+// 前台老板自行切换订单完成状态
+function toggleUserOrderStatus(orderId) {
+    const order = allOrders.find(item => item.id === orderId);
+    if (!order) return alert("订单不存在");
+
+    order.status = order.status === "未完成" ? "已完成" : "未完成";
+    localStorage.setItem("rfxAllOrder", JSON.stringify(allOrders));
+    renderUserOrder();
+    alert("订单状态已更新为：" + order.status);
+}
+
+// 渲染个人订单
+function renderUserOrder() {
+    const box = document.getElementById("orderList");
+    const empty = document.getElementById("emptyTip");
+
+    if (!currentUser) {
+        empty.classList.remove("hidden");
+        box.classList.add("hidden");
+        return;
+    }
+
+    const mine = allOrders.filter(item => item.userName === currentUser.name);
+
+    if (mine.length === 0) {
+        empty.classList.remove("hidden");
+        box.classList.add("hidden");
+        return;
+    }
+
+    empty.classList.add("hidden");
+    box.classList.remove("hidden");
+    box.innerHTML = "";
+
+    mine.forEach(item => {
+        const statusColor = item.status === "未完成" ? "text-red-400" : "text-green-400";
+        const btnText = item.status === "未完成" ? "标记已完成" : "标记未完成";
+        const btnBg = item.status === "未完成" ? "bg-green-600" : "bg-yellow-600";
+
+        box.innerHTML += `
+        <div class="glassmorphism rounded-xl p-5">
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-gradient font-bold">${item.goods}</span>
+                <span class="${statusColor} text-sm font-medium">${item.status}</span>
+            </div>
+            <p class="text-sm text-gray-400 mb-1">订单号：${item.id}</p>
+            <p class="text-sm text-gray-400 mb-1">下单时间：${item.time}</p>
+            <p class="text-sm text-gray-400 mb-1">备注：${item.note || "无"}</p>
+            <p class="text-sub font-bold mt-2 mb-3">¥${item.price}</p>
+            <button onclick="toggleUserOrderStatus(${item.id})" class="w-full py-2 rounded-lg ${btnBg} text-sm btn-glow">
+                ${btnText}
+            </button>
+        </div>`;
+    });
+}
+
+// 打开客服弹窗
+function openService() {
+    closeAllModal();
+    showMask();
+    document.getElementById("serviceModal").classList.remove("hidden");
+}
+
+// 打开后台密码弹窗
+function openAdminPwd() {
+    closeAllModal();
+    showMask();
+    document.getElementById("adminPwdInput").value = "";
+    document.getElementById("adminPwdModal").classList.remove("hidden");
+}
+
+// 校验后台密码
+function checkAdminPwd() {
+    const pwd = document.getElementById("adminPwdInput").value;
+    if (pwd !== ADMIN_PASSWORD) return alert("密码错误");
+    closeAllModal();
+    showMask();
+    document.getElementById("adminModal").classList.remove("hidden");
+    renderAdminOrder();
+}
+
+// 一键清空全部订单
+function clearAllOrders() {
+    if (!confirm("确定清空全部订单，无法恢复？")) return;
+    allOrders = [];
+    localStorage.removeItem("rfxAllOrder");
+    renderAdminOrder();
+    renderUserOrder();
+    alert("订单已全部清空");
+}
+
+// 渲染后台全部订单
+function renderAdminOrder() {
+    const adminBox = document.getElementById("adminOrderBox");
+
+    if (allOrders.length === 0) {
+        adminBox.innerHTML = `<p class="text-gray-400 col-span-full py-12 text-center">暂无订单</p>`;
+        return;
+    }
+
+    adminBox.innerHTML = "";
+    allOrders.forEach((item, idx) => {
+        const statusColor = item.status === "未完成" ? "text-red-400" : "text-green-400";
+
+        adminBox.innerHTML += `
+        <div class="glassmorphism rounded-xl p-5">
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-gradient font-bold">${item.goods}</span>
+                <span class="${statusColor} text-sm font-medium">${item.status}</span>
+            </div>
+            <p class="text-sm text-gray-300 mb-1">老板昵称：${item.userName}</p>
+            <p class="text-sm text-gray-300 mb-1">联系方式：${item.userContact}</p>
+            <p class="text-sm text-gray-400 mb-1">订单号：${item.id}</p>
+            <p class="text-sm text-gray-400 mb-1">下单时间：${item.time}</p>
+            <p class="text-sm text-gray-400 mb-1">备注：${item.note || "无"}</p>
+            <p class="text-sub font-bold mb-3">¥${item.price}</p>
+            ${item.status === "未完成" ? `
+            <button onclick="finishOrder(${idx})" class="w-full py-2 rounded-lg bg-green-600 text-sm btn-glow">
+                标记已完成
+            </button>
+            ` : `
+            <div class="text-center text-green-400">该订单已完工</div>
+            `}
+        </div>`;
+    });
+}
+
+// 后台标记订单完成
+function finishOrder(idx) {
+    allOrders[idx].status = "已完成";
+    localStorage.setItem("rfxAllOrder", JSON.stringify(allOrders));
+    renderAdminOrder();
+    renderUserOrder();
+    alert("订单状态已更新为【已完成】");
+}
+
+// 页面加载初始化
+window.onload = function () {
+    renderUserOrder();
+};
+</script>
+</body>
+</html>
